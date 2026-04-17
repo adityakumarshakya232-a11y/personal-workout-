@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NeoGym | Elite Workout Protocol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #ededee;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* PRELOADER */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050508;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .preloader.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-ring {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(0, 255, 255, 0.2);
+            border-top: 4px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 15px #00ccff;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* background animation */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, #0b1120, #000000);
+            z-index: -2;
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#00ffcc20 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* header */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 2rem;
+            background: rgba(15, 25, 35, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 0.8rem 1.8rem;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+        }
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00ffff, #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .controls-panel {
+            display: flex;
+            gap: 15px;
+        }
+        .icon-btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff55;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-weight: 600;
+            color: #eef5ff;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .icon-btn:hover {
+            background: #00ffff22;
+            box-shadow: 0 0 10px #00ffffaa;
+            transform: scale(1.02);
+        }
+
+        .motivation {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 1rem 0 2rem;
+            text-shadow: 0 0 8px #00ffcc;
+        }
+
+        /* stats row */
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+        }
+        .glass-card {
+            background: rgba(20, 30, 45, 0.55);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+            transition: 0.25s ease;
+        }
+        .progress-card {
+            flex: 2;
+        }
+        .streak-card {
+            flex: 1;
+            text-align: center;
+        }
+        .day-tracker {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .progress-bar-bg {
+            background: #1e2a3a;
+            border-radius: 40px;
+            height: 14px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #00ff99);
+            border-radius: 40px;
+            transition: width 0.4s ease;
+        }
+        .streak-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #00ff99;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+            border-left: 5px solid #00ffff;
+            padding-left: 18px;
+        }
+
+        .workout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 26px;
+            margin-bottom: 40px;
+        }
+
+        /* Card without image - gradient background */
+        .workout-card {
+            background: rgba(12, 18, 28, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .workout-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 35px rgba(0, 200, 255, 0.2);
+            border-color: #00ffffaa;
+        }
+        /* Gradient icon area instead of image */
+        .card-icon {
+            height: 140px;
+            background: linear-gradient(135deg, #00ffff22, #00ff9922);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .card-content {
+            padding: 1.2rem;
+        }
+        .exercise-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .reps-info {
+            color: #00ffcc;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+        .instruction {
+            font-size: 0.85rem;
+            color: #b0c4de;
+            margin: 8px 0;
+        }
+        .complete-btn {
+            background: linear-gradient(95deg, #00ccff22, #00ff9922);
+            border: 1px solid #00ffcc;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+            width: 100%;
+        }
+        .complete-btn.completed {
+            background: #00ff9933;
+            border-color: #00ff99;
+            color: #d0ffec;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .complete-btn:hover:not(.completed) {
+            background: #00ffff33;
+            box-shadow: 0 0 8px cyan;
+        }
+
+        /* timer */
+        .timer-area {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .circular-timer {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        svg.circle-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-btns button {
+            background: #1e2a3a;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 30px;
+            margin: 0 3px;
+            color: white;
+            cursor: pointer;
+        }
+        .timer-btns button:hover {
+            background: #00ffcc33;
+        }
+
+        .extra-sections {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .warmup-card, .cooldown-card {
+            flex: 1;
+            background: rgba(0, 30, 30, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 1.2rem;
+        }
+        .start-workout-btn {
+            background: linear-gradient(145deg, #00ffcc, #0099ff);
+            border: none;
+            padding: 14px 28px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            border-radius: 60px;
+            width: 100%;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #000;
+        }
+        .start-workout-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #00ffcc;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .motivation { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="preloader" id="preloader">
+    <div class="loader-ring"></div>
+</div>
+<div class="bg-gradient"></div>
+<div class="particles"></div>
+
+<div class="container">
+    <div class="top-bar">
+        <div class="logo"><h1><i class="fas fa-dumbbell"></i> NEOGYM</h1></div>
+        <div class="controls-panel">
+            <button id="soundToggleBtn" class="icon-btn"><i class="fas fa-volume-up"></i> Sound ON</button>
+            <button id="themeToggleBtn" class="icon-btn"><i class="fas fa-moon"></i> Dark</button>
+        </div>
+    </div>
+    <div class="motivation">💪 No Pain No Gain 💪</div>
+
+    <div class="stats-row">
+        <div class="glass-card progress-card">
+            <div>📅 Weekly Progression System</div>
+            <div class="day-tracker" id="dayTrackerText">Day 1 / 7</div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="weekProgressFill"></div></div>
+            <div>Next level up in <span id="daysUntilProgression">7</span> days → increased reps/sets</div>
+        </div>
+        <div class="glass-card streak-card">
+            <i class="fas fa-fire"></i> STREAK
+            <div class="streak-value" id="streakCount">0</div>
+            <div>🔥 daily workouts</div>
+        </div>
+    </div>
+
+    <button id="startWorkoutBtn" class="start-workout-btn"><i class="fas fa-play"></i> START WORKOUT</button>
+
+    <div class="section-title">🏋️ FULL BODY</div>
+    <div class="workout-grid" id="fullBodyGrid"></div>
+    
+    <div class="section-title">💪 ARMS & BICEPS</div>
+    <div class="workout-grid" id="armsBicepsGrid"></div>
+
+    <div class="section-title">🏋️ SHOULDERS</div>
+    <div class="workout-grid" id="shouldersGrid"></div>
+
+    <div class="extra-sections">
+        <div class="warmup-card"><h3><i class="fas fa-heartbeat"></i> Warm-up (5 min)</h3><p>🔹 Jumping Jacks: 30 sec<br>🔹 Arm Swings: 20 reps<br>🔹 Torso Twists: 15 each side<br>🔹 High Knees: 30 sec</p></div>
+        <div class="cooldown-card"><h3><i class="fas fa-spa"></i> Cooldown</h3><p>🧘 Quad stretch, Hamstring stretch, Shoulder stretch, Deep breathing (2 min)</p></div>
+    </div>
+    <footer>🔥 Push beyond limits — every rep counts</footer>
+</div>
+
+<script>
+    // Exercise Data (without images)
+    const baseExercises = [
+        { id: "pushups", name: "Push-ups", category: "fullbody", baseReps: "12", baseSets: 3, instruction: "Keep back straight, lower chest to floor.", icon: "fas fa-pushchair" },
+        { id: "squats", name: "Squats", category: "fullbody", baseReps: "25", baseSets: 3, instruction: "Feet shoulder-width, squat deep.", icon: "fas fa-walking" },
+        { id: "legraises", name: "Leg Raises", category: "fullbody", baseReps: "15", baseSets: 3, instruction: "Lie down, lift legs without bending.", icon: "fas fa-person-walking" },
+        { id: "mountain", name: "Mountain Climbers", category: "fullbody", baseReps: "50", baseSets: 3, instruction: "Drive knees quickly like climbing.", icon: "fas fa-mountain" },
+        { id: "hollowhold", name: "Hollow Hold", category: "fullbody", baseReps: "40s", baseSets: 1, instruction: "Hold hollow body position. Timer 40s.", icon: "fas fa-hourglass-half", hasTimer: true },
+        { id: "pullups", name: "Pull-ups", category: "arms", baseReps: "6–8", baseSets: 3, instruction: "Overhand grip, pull chin above bar.", icon: "fas fa-hand-peace" },
+        { id: "diamondpush", name: "Diamond Push-ups", category: "arms", baseReps: "10", baseSets: 3, instruction: "Hands in diamond shape, triceps focus.", icon: "fas fa-gem" },
+        { id: "benchdips", name: "Bench Dips", category: "arms", baseReps: "12", baseSets: 3, instruction: "Use bench, lower body controlled.", icon: "fas fa-chair" },
+        { id: "chinup", name: "Chin-ups", category: "biceps", baseReps: "6–8", baseSets: 3, instruction: "Underhand grip, focus biceps.", icon: "fas fa-hand-peace" },
+        { id: "resistancecurl", name: "Resistance Band Curls", category: "biceps", baseReps: "12", baseSets: 3, instruction: "Step on band, curl up.", icon: "fas fa-band-aid" },
+        { id: "dbcurl", name: "Dumbbell Bicep Curls", category: "biceps", baseReps: "10", baseSets: 3, instruction: "If dumbbells available.", icon: "fas fa-dumbbell" },
+        { id: "pikepush", name: "Pike Push-ups", category: "shoulders", baseReps: "10", baseSets: 3, instruction: "Inverted V position, lower head.", icon: "fas fa-mountain" },
+        { id: "shouldertaps", name: "Shoulder Taps", category: "shoulders", baseReps: "20", baseSets: 3, instruction: "Plank position, alternate shoulder taps.", icon: "fas fa-hand-back-fist" },
+        { id: "armcircles", name: "Arm Circles", category: "shoulders", baseReps: "30 sec", baseSets: 3, instruction: "Small to large circular motions.", icon: "fas fa-rotate-right" }
+    ];
+
+    let dayCounter = 1;
+    let streak = 0;
+    let lastCompletedDate = null;
+    let soundEnabled = true;
+    let darkMode = false;
+    let completedMap = new Map();
+    
+    let timerInterval = null;
+    let remainingSeconds = 40;
+    let isTimerRunning = false;
+    let currentTimerExerciseId = null;
+
+    // Success sound
+    let audioCtx = null;
+    function playSuccessBeep() {
+        if (!soundEnabled) return;
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 880;
+            gain.gain.value = 0.2;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.8);
+            osc.stop(audioCtx.currentTime + 0.5);
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch(e) { console.log(e); }
+    }
+
+    function getDynamicRepsSets(ex) {
+        let weeks = Math.floor((dayCounter - 1) / 7);
+        if (ex.id === "hollowhold") return { reps: "40s", sets: 1, displayReps: "40 sec hold" };
+        
+        let baseRepsNum = parseInt(ex.baseReps) || 12;
+        if (ex.baseReps.includes("–")) {
+            let low = parseInt(ex.baseReps.split("–")[0]);
+            baseRepsNum = low + weeks * 2;
+        } else {
+            baseRepsNum = baseRepsNum + weeks * 3;
+        }
+        
+        let newSets = ex.baseSets + weeks;
+        if (newSets > 6) newSets = 6;
+        
+        if (ex.id === "mountain") baseRepsNum = 50 + weeks * 10;
+        if (ex.id === "squats") baseRepsNum = 25 + weeks * 5;
+        if (ex.id === "legraises") baseRepsNum = 15 + weeks * 5;
+        if (ex.id === "armcircles") return { reps: "30 sec", sets: newSets, displayReps: `${30 + weeks * 5} sec` };
+        
+        return { reps: baseRepsNum, sets: newSets, displayReps: `${baseRepsNum} reps` };
+    }
+
+    function renderAllCards() {
+        const fullBodyDiv = document.getElementById('fullBodyGrid');
+        const armsDiv = document.getElementById('armsBicepsGrid');
+        const shouldersDiv = document.getElementById('shouldersGrid');
+        fullBodyDiv.innerHTML = '';
+        armsDiv.innerHTML = '';
+        shouldersDiv.innerHTML = '';
+        
+        baseExercises.forEach(ex => {
+            const { displayReps, sets } = getDynamicRepsSets(ex);
+            const completed = completedMap.get(ex.id) || false;
+            const setsText = `${sets} ${sets === 1 ? 'set' : 'sets'}`;
+            
+            const card = document.createElement('div');
+            card.className = 'workout-card';
+            card.innerHTML = `
+                <div class="card-icon">
+                    <i class="${ex.icon}" style="font-size: 3.5rem; color: #00ffcc;"></i>
+                </div>
+                <div class="card-content">
+                    <div class="exercise-name">${ex.name}</div>
+                    <div class="reps-info">${displayReps} • ${setsText}</div>
+                    <div class="instruction">${ex.instruction}</div>
+                    ${ex.hasTimer ? `
+                        <div class="timer-area" id="timer-area-${ex.id}">
+                            <div class="circular-timer">
+                                <svg width="60" height="60" viewBox="0 0 60 60" class="circle-svg">
+                                    <circle cx="30" cy="30" r="26" fill="none" stroke="#2c3e50" stroke-width="4"/>
+                                    <circle cx="30" cy="30" r="26" fill="none" stroke="#00ffcc" stroke-width="4" stroke-dasharray="163.36" stroke-dashoffset="0" id="circle-progress-${ex.id}"/>
+                                </svg>
+                                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:bold;" id="timerText-${ex.id}">40</div>
+                            </div>
+                            <div class="timer-btns">
+                                <button class="timer-start" data-id="${ex.id}">Start</button>
+                                <button class="timer-pause" data-id="${ex.id}">Pause</button>
+                                <button class="timer-reset" data-id="${ex.id}">Reset</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <button class="complete-btn ${completed ? 'completed' : ''}" data-id="${ex.id}">${completed ? '✓ Completed' : 'Complete Exercise'}</button>
+                    `}
+                </div>
+            `;
+            
+            if (ex.category === 'fullbody') fullBodyDiv.appendChild(card);
+            else if (ex.category === 'arms' || ex.category === 'biceps') armsDiv.appendChild(card);
+            else shouldersDiv.appendChild(card);
+        });
+        
+        attachCompleteEvents();
+        attachTimerEvents();
+    }
+
+    function attachCompleteEvents() {
+        document.querySelectorAll('.complete-btn:not(.completed)').forEach(btn => {
+            btn.removeEventListener('click', handleComplete);
+            btn.addEventListener('click', handleComplete);
+        });
+    }
+
+    function handleComplete(e) {
+        const btn = e.currentTarget;
+        const exId = btn.getAttribute('data-id');
+        if (completedMap.get(exId)) return;
+        completedMap.set(exId, true);
+        btn.classList.add('completed');
+        btn.innerText = '✓ Completed';
+        playSuccessBeep();
+        saveData();
+        checkAllExercisesCompleted();
+    }
+
+    function checkAllExercisesCompleted() {
+        const allIds = baseExercises.map(e => e.id);
+        const allDone = allIds.every(id => completedMap.get(id) === true);
+        if (allDone) {
+            playSuccessBeep();
+            setTimeout(() => {
+                alert("🎉 Workout Completed 🎉 Amazing! +1 day streak");
+                updateStreakAfterWorkoutComplete();
+                advanceDayAndProgression();
+            }, 100);
+        }
+    }
+
+    function updateStreakAfterWorkoutComplete() {
+        const today = new Date().toDateString();
+        if (lastCompletedDate !== today) {
+            if (lastCompletedDate && (new Date(lastCompletedDate).getTime() + 86400000) >= new Date().getTime()) streak++;
+            else if (!lastCompletedDate) streak = 1;
+            else if (lastCompletedDate !== today) streak = 1;
+            lastCompletedDate = today;
+            if (streak > 999) streak = 999;
+            document.getElementById('streakCount').innerText = streak;
+            saveData();
+        }
+    }
+
+    function advanceDayAndProgression() {
+        let newDay = dayCounter + 1;
+        if (newDay > 7) {
+            dayCounter = 1;
+        } else {
+            dayCounter = newDay;
+        }
+        completedMap.clear();
+        if (currentTimerExerciseId && timerInterval) clearInterval(timerInterval);
+        saveData();
+        updateDayUI();
+        renderAllCards();
+    }
+
+    function updateDayUI() {
+        document.getElementById('dayTrackerText').innerText = `Day ${dayCounter} / 7`;
+        const nextProgression = 7 - (dayCounter % 7);
+        document.getElementById('daysUntilProgression').innerText = nextProgression === 0 ? 7 : nextProgression;
+        let percent = (dayCounter / 7) * 100;
+        document.getElementById('weekProgressFill').style.width = `${percent}%`;
+    }
+
+    // Timer functions
+    function attachTimerEvents() {
+        document.querySelectorAll('.timer-start').forEach(btn => {
+            btn.onclick = (e) => {
+                const id = btn.getAttribute('data-id');
+                startTimerForExercise(id);
+            };
+        });
+        document.querySelectorAll('.timer-pause').forEach(btn => {
+            btn.onclick = () => { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; isTimerRunning = false; } };
+        });
+        document.querySelectorAll('.timer-reset').forEach(btn => {
+            btn.onclick = (e) => {
+                const id = btn.getAttribute('data-id');
+                resetTimerForExercise(id);
+            };
+        });
+    }
+
+    function startTimerForExercise(id) {
+        if (currentTimerExerciseId && currentTimerExerciseId !== id && timerInterval) clearInterval(timerInterval);
+        currentTimerExerciseId = id;
+        if (timerInterval) clearInterval(timerInterval);
+        isTimerRunning = true;
+        let time = remainingSeconds;
+        const circle = document.getElementById(`circle-progress-${id}`);
+        const textSpan = document.getElementById(`timerText-${id}`);
+        if (!circle) return;
+        const circumference = 2 * Math.PI * 26;
+        circle.setAttribute('stroke-dasharray', circumference);
+        
+        function updateTimerDisplay() {
+            const offset = circumference - (time / 40) * circumference;
+            circle.style.strokeDashoffset = offset;
+            if (textSpan) textSpan.innerText = time;
+            if (time <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isTimerRunning = false;
+                playSuccessBeep();
+                if (!completedMap.get(id)) {
+                    completedMap.set(id, true);
+                    saveData();
+                    renderAllCards();
+                    checkAllExercisesCompleted();
+                }
+            }
+        }
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            if (isTimerRunning && time > 0) {
+                time--;
+                remainingSeconds = time;
+                updateTimerDisplay();
+                if (time === 0) clearInterval(timerInterval);
+            }
+        }, 1000);
+    }
+
+    function resetTimerForExercise(id) {
+        if (timerInterval) clearInterval(timerInterval);
+        remainingSeconds = 40;
+        isTimerRunning = false;
+        const circle = document.getElementById(`circle-progress-${id}`);
+        const textSpan = document.getElementById(`timerText-${id}`);
+        if (circle) circle.style.strokeDashoffset = 0;
+        if (textSpan) textSpan.innerText = "40";
+    }
+
+    function saveData() {
+        const completedObj = Object.fromEntries(completedMap);
+        localStorage.setItem('workoutCompleted', JSON.stringify(completedObj));
+        localStorage.setItem('dayCounter', dayCounter);
+        localStorage.setItem('streak', streak);
+        localStorage.setItem('lastDate', lastCompletedDate || '');
+        localStorage.setItem('soundPref', soundEnabled);
+    }
+
+    function loadData() {
+        const stored = localStorage.getItem('workoutCompleted');
+        if (stored) { const obj = JSON.parse(stored); completedMap = new Map(Object.entries(obj)); }
+        dayCounter = parseInt(localStorage.getItem('dayCounter')) || 1;
+        streak = parseInt(localStorage.getItem('streak')) || 0;
+        lastCompletedDate = localStorage.getItem('lastDate') || null;
+        const soundPref = localStorage.getItem('soundPref');
+        if (soundPref !== null) soundEnabled = soundPref === 'true';
+        updateDayUI();
+        document.getElementById('streakCount').innerText = streak;
+        if (soundEnabled === false) document.getElementById('soundToggleBtn').innerHTML = '<i class="fas fa-volume-mute"></i> Sound OFF';
+    }
+
+    // Event Listeners
+    document.getElementById('soundToggleBtn').addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        document.getElementById('soundToggleBtn').innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i> Sound ON' : '<i class="fas fa-volume-mute"></i> Sound OFF';
+        saveData();
+    });
+    
+    document.getElementById('themeToggleBtn').addEventListener('click', () => {
+        darkMode = !darkMode;
+        document.body.style.background = darkMode ? "#f0f0f0" : "#0a0a0f";
+        document.body.style.color = darkMode ? "#111" : "#ededee";
+    });
+    
+    document.getElementById('startWorkoutBtn').addEventListener('click', () => {
+        window.scrollTo({ top: 600, behavior: 'smooth' });
+    });
+
+    window.addEventListener('load', () => {
+        loadData();
+        renderAllCards();
+        updateDayUI();
+        setTimeout(() => { document.getElementById('preloader').classList.add('hide'); }, 800);
+    });
+</script>
+</body>
+</html>
